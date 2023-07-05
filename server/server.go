@@ -12,17 +12,20 @@ import (
 	"github.com/facette/natsort"
 )
 
-// type File struct {
-// 	Name string `json:"name"`
-// }
-var dummyFiles []string
+type FsEntry struct {
+	Name     string `json:"name"`
+	IsFile   bool   `json:"isFile"`
+	IsFolder bool   `json:"isFolder"`
+}
 
-func serveFiles(w http.ResponseWriter, r *http.Request) {
+func serveFoldersAndFiles(w http.ResponseWriter, r *http.Request) {
 	defer measureTime()()
+	path := "data"
+	fsEntries := getFiles(path)
 	log.Println("/files")
 
 	// Encode the list of files as JSON and write it to the response
-	err := json.NewEncoder(w).Encode(dummyFiles)
+	err := json.NewEncoder(w).Encode(fsEntries)
 	if err != nil {
 		log.Println("Error encoding JSON:", err)
 	}
@@ -37,16 +40,23 @@ func measureTime() func() {
 	}
 }
 
-func main() {
-	datadir := "./data"
-	err := filepath.Walk(datadir, func(path string, info os.FileInfo, err error) error {
+func getFiles(dir string) []FsEntry {
+	var folders []string
+	var files []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if !info.IsDir() {
-			filename := filepath.Base(path)
-			dummyFiles = append(dummyFiles, filename)
+		// Exclude the root directory itself
+		if path == dir {
+			return nil
+		}
+
+		if info.IsDir() {
+			folders = append(folders, filepath.Base(path))
+		} else {
+			files = append(files, filepath.Base(path))
 		}
 
 		return nil
@@ -56,14 +66,35 @@ func main() {
 	}
 
 	// natural sort
-	natsort.Sort(dummyFiles)
+	natsort.Sort(folders)
+	natsort.Sort(files)
 
+	var entries []FsEntry
+	for _, v := range folders {
+		entry := FsEntry{
+			Name:     v,
+			IsFolder: true,
+		}
+		entries = append(entries, entry)
+	}
+	for _, v := range files {
+		entry := FsEntry{
+			Name:   v,
+			IsFile: true,
+		}
+		entries = append(entries, entry)
+	}
+
+	return entries
+}
+
+func main() {
 	// Create an HTTP handler function
-	http.HandleFunc("/files", serveFiles)
+	http.HandleFunc("/directory", serveFoldersAndFiles)
 
 	// Start the HTTP server on port 8080
 	log.Println("Server listening on port 8080")
-	err = http.ListenAndServe(":8080", addCorsHeaders(http.DefaultServeMux))
+	err := http.ListenAndServe(":8080", addCorsHeaders(http.DefaultServeMux))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -7,22 +7,28 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./folder-file-list.component.css']
 })
 export class FolderFileListComponent {
-  filenames: string[] = [];
-  selectedFile: string | null = null;
+  dirEntries: FsEntry[] = [];
+  selectedEntry: FsEntry | null = null;
 
   constructor(private http: HttpClient) {}
 
-  selectFile(file: string) {
-    this.selectedFile = file;
+  selectEntry(entry: FsEntry) {
+    this.selectedEntry = entry;
   }
 
   async ngOnInit() {
-    this.filenames = await this.fetchFilenames();
+    this.dirEntries = await this.fetchDirectoryEntries();
   }
 
-  fetchFilenames(): Promise<string[]> {
-    const url = 'http://localhost:8080/files';
-    return this.http.get<string[]>(url).toPromise()
+  fetchDirectoryEntries(): Promise<FsEntry[]> {
+    const url = 'http://localhost:8080/directory';
+    return this.http.get<FsEntry[]>(url).toPromise()
     .then(response => response || []);
   }
+}
+
+interface FsEntry {
+  name: string;
+  isFile: boolean;
+  isFolder: boolean;
 }
