@@ -20,9 +20,12 @@ type FsEntry struct {
 
 func serveFoldersAndFiles(w http.ResponseWriter, r *http.Request) {
 	defer measureTime()()
-	path := "data"
+	// Extract the path query parameter from the URL
+	queryParams := r.URL.Query()
+	path := queryParams.Get("path")
+
 	fsEntries := getFiles(path)
-	log.Println("/files")
+	log.Println("serveDirectory:", path)
 
 	// Encode the list of files as JSON and write it to the response
 	err := json.NewEncoder(w).Encode(fsEntries)
@@ -55,6 +58,7 @@ func getFiles(dir string) []FsEntry {
 
 		if info.IsDir() {
 			folders = append(folders, filepath.Base(path))
+			return filepath.SkipDir
 		} else {
 			files = append(files, filepath.Base(path))
 		}
