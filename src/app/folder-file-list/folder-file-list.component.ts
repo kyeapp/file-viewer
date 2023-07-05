@@ -31,16 +31,25 @@ export class FolderFileListComponent {
     }
   }
 
-  goBack(): void {
-    if (this.breadcrumbList.length > 1) {
-      this.breadcrumbList.pop();
-
-      // remove last directory
-      const lastIndex = this.currentDir.lastIndexOf("/");
-      this.currentDir = this.currentDir.substring(0, lastIndex);
-
-      this.updateDirEntries(this.currentDir);
+  goToParentDir(): void {
+    if (this.breadcrumbList.length <= 1) {
+      return
     }
+    this.breadcrumbList.pop();
+
+    // remove last directory
+    const lastIndex = this.currentDir.lastIndexOf("/");
+    this.currentDir = this.currentDir.substring(0, lastIndex);
+
+    // does not update screen because it may be called multiple times
+  }
+
+  breadcrumbClick(index: number): void {
+    // go back to parent directory clicked on
+    while (this.breadcrumbList.length > index + 1) {
+      this.goToParentDir();
+    }
+    this.updateDirEntries(this.currentDir);
   }
 
   ngOnInit() {
