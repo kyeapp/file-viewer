@@ -5,24 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
+
+	"github.com/facette/natsort"
 )
 
 // type File struct {
 // 	Name string `json:"name"`
 // }
-var dummyFiles = [10]string{
-	"file1.txt",
-	"file2.txt",
-	"file3.txt",
-	"file4.txt",
-	"file5.txt",
-	"file6.txt",
-	"file7.txt",
-	"file8.txt",
-	"file9.txt",
-	"file10.txt",
-}
+var dummyFiles []string
 
 func serveFiles(w http.ResponseWriter, r *http.Request) {
 	defer measureTime()()
@@ -45,13 +38,32 @@ func measureTime() func() {
 }
 
 func main() {
-	// Define the list of filenames
+	datadir := "./data"
+	err := filepath.Walk(datadir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() {
+			filename := filepath.Base(path)
+			dummyFiles = append(dummyFiles, filename)
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Fatal("Error:", err)
+	}
+
+	// natural sort
+	natsort.Sort(dummyFiles)
+
 	// Create an HTTP handler function
 	http.HandleFunc("/files", serveFiles)
 
 	// Start the HTTP server on port 8080
 	log.Println("Server listening on port 8080")
-	err := http.ListenAndServe(":8080", addCorsHeaders(http.DefaultServeMux))
+	err = http.ListenAndServe(":8080", addCorsHeaders(http.DefaultServeMux))
 	if err != nil {
 		log.Fatal(err)
 	}
