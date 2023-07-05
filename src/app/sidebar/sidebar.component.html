@@ -1,0 +1,20 @@
+<div class="p-3 bg-light" style="width: 280px;">
+  <a href="/" class="text-decoration-none">
+    <svg class="mr-2" width="40" height="32">
+      <use xlink:href="#bootstrap"></use>
+    </svg>
+    <span class="">Goodle Dribe</span>
+  </a>
+  <hr>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item" *ngFor="let item of sideBarItems">
+      <a href="#" class="nav-link" 
+                  [class.active]="selectedItem === item"
+                  [class.dark-link]="selectedItem !== item"
+                  (click)="singleClick(item)">
+        <i class="mr-2" [class]="item.icon"></i>
+        {{ item.text }}
+      </a>
+    </li>
+  </ul>
+</div>

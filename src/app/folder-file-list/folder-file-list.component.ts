@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { join, Path } from '@angular-devkit/core';
 
 @Component({
-  selector: 'folder-file-list',
+  selector: 'app-folder-file-list',
   templateUrl: './folder-file-list.component.html',
   styleUrls: ['./folder-file-list.component.css']
 })
@@ -14,13 +14,12 @@ export class FolderFileListComponent {
   currentDir: string = "data";
   breadcrumbList: string[] = ['My Drive'];
 
-  dirEntries: FsEntry[] = [];
   selectedEntry: FsEntry | null = null;
-
   singleClick(entry: FsEntry) {
     this.selectedEntry = entry;
   }
 
+  dirEntries: FsEntry[] = [];
   doubleClick(entry: FsEntry) {
     console.log(`${this.currentDir}/${entry.name}`)
     if (entry.isFolder) {
