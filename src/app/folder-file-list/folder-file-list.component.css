@@ -1,0 +1,3 @@
+table.table-hover tbody tr.selected > td {
+  background-color: #c2e7ff;
+}
