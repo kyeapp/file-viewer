@@ -10,7 +10,7 @@ import { join, Path } from '@angular-devkit/core';
 export class FolderFileListComponent {
   constructor(private http: HttpClient) {}
 
-  // currentDir: string = "data"
+  // TODO: think about how refactor so we only need the breadcrumblist
   currentDir: string = "data";
   breadcrumbList: string[] = ['My Drive'];
 
