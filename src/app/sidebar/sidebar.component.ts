@@ -10,6 +10,9 @@ export class SidebarComponent {
   sideBarItems: SideBarItem[] = [
     { icon: 'bi-hdd', text: 'My Drive', routerLink: '/folderFile' },
     { icon: 'bi-search', text: 'Search', routerLink: '/search' },
+    { icon: 'bi-person-gear', text: 'Admin Panel', routerLink: '' },
+    { icon: 'bi-gear', text: 'Settings', routerLink: '' },
+    { icon: 'bi-activity', text: 'System Monitor', routerLink: '' },
   ];
 
   selectedItem: SideBarItem | null = this.sideBarItems[0];
