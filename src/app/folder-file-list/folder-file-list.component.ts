@@ -11,7 +11,7 @@ export class FolderFileListComponent {
   constructor(private http: HttpClient) {}
 
   // TODO: think about how refactor so we only need the breadcrumblist
-  currentDir: string = "data";
+  currentDir: string = "my-drive";
   breadcrumbList: string[] = ['My Drive'];
 
   selectedEntry: FsEntry | null = null;

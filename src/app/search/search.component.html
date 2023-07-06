@@ -1,17 +1,32 @@
-<div class="p-5" style="width: 600px;">
+<div class="alert alert-primary" role="alert">
+  <h1 class="text-center">Document Search Demo using Harry Potter books</h1>
+</div>
+<div class="p-3" style="width: 800px;">
   <!-- Actual search box -->
   <div class="form-group has-search">
     <span class="bi-search form-control-feedback"></span>
-    <input type="text" class="form-control" placeholder="Search">
-  </div>
-
-  <!-- Another variation with a button -->
-  <div class="input-group">
-    <input type="text" class="form-control" placeholder="Advanced Search">
-    <div class="input-group-append">
-      <button class="btn btn-secondary" type="button">
-        <i class="bi-search"></i>
-      </button>
-    </div>
+    <input type="text" class="form-control" placeholder="Search" [(ngModel)]="searchTerm" (keydown.enter)="search()">
+    {{ searchResult?.SearchStat }}
   </div>
 </div>
+
+<table class="table table-hover table-sm" *ngIf="searchResult !== null" >
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- uh oh this can get slow -->
+    <!-- <ng-container *ngFor="let hit of searchResult.Hits"> -->
+    <ng-container *ngFor="let hit of searchResult.Hits.slice(0, 100)">
+      <tr>
+        <td> {{ hit.Name }} </td>
+        <td [innerHTML]="hit.Line[0] | markdown"></td>
+        <!-- <td> {{ hit.Line }} </td> -->
+      </tr>
+    </ng-container>
+  </tbody>
+</table>
+

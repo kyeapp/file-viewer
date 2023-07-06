@@ -17,3 +17,8 @@
     pointer-events: none;
     color: #aaa;
 }
+
+/* innterHTML is not being centered */
+/* td { */
+/*     vertical-align: middle !important; */
+/* } */
