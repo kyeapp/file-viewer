@@ -1,15 +1,9 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <ng-container *ngFor="let crumb of breadcrumbList; let i = index; let last = last">
-      <li class="breadcrumb-item" [attr.aria-current]="last ? 'page' : null" [ngClass]="{ 'active': last }">
-        <ng-container *ngIf="last; else linkItem">
-          {{ crumb }}
-        </ng-container>
-        <ng-template #linkItem>
-          <a href="#" (click)="breadcrumbClick(i)">
-            {{ crumb }}
-          </a>
-        </ng-template>
+      <li class="breadcrumb-item"
+          [ngClass]="{ 'active': last }" >
+          <a (click)="breadcrumbClick(i)">{{ crumb }}</a>
       </li>
     </ng-container>
   </ol>
@@ -24,7 +18,9 @@
   </thead>
   <tbody>
     <ng-container *ngFor="let entry of dirEntries">
-      <tr [class.selected]="selectedEntry === entry" (click)="singleClick(entry)" (dblclick)="doubleClick(entry)">
+      <tr [class.selected]="selectedEntry === entry"
+          (click)="singleClick(entry)"
+          (dblclick)="doubleClick(entry)">
         <td>
           <i *ngIf="entry.isFolder" class="bi-folder-fill"></i>
           <i *ngIf="!entry.isFolder" class="bi-file-earmark"></i>

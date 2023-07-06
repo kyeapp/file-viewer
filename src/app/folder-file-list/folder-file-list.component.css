@@ -1,3 +1,13 @@
 table.table-hover tbody tr.selected > td {
   background-color: #c2e7ff;
 }
+
+a {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+a:hover {
+  border-radius: 3px;
+  background-color: lightblue;
+}
