@@ -8,8 +8,8 @@ import { Component } from '@angular/core';
 
 export class SidebarComponent {
   sideBarItems: SideBarItem[] = [
-    { icon: 'bi-hdd', text: 'My Drive' },
-    { icon: 'bi-search', text: 'Search' },
+    { icon: 'bi-hdd', text: 'My Drive', routerLink: '/folderFile' },
+    { icon: 'bi-search', text: 'Search', routerLink: '/search' },
   ];
 
   selectedItem: SideBarItem | null = this.sideBarItems[0];
@@ -21,4 +21,5 @@ export class SidebarComponent {
 interface SideBarItem {
   icon: string;
   text: string;
+  routerLink: string;
 }
