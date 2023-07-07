@@ -1,9 +1,10 @@
 <div class="alert alert-primary" role="alert">
   <h1 class="text-center">Document Search Demo using Harry Potter books</h1>
 </div>
+
 <div class="p-3" style="width: 800px;">
   <!-- Actual search box -->
-  <div class="form-group has-search">
+  <div class="form-group has-search position-relative">
     <span class="bi-search form-control-feedback"></span>
     <input type="text" class="form-control" placeholder="Search" [(ngModel)]="searchTerm" (keydown.enter)="search()">
     {{ searchResult?.SearchStat }}
@@ -18,15 +19,13 @@
     </tr>
   </thead>
   <tbody>
-    <!-- uh oh this can get slow -->
     <!-- <ng-container *ngFor="let hit of searchResult.Hits"> -->
     <ng-container *ngFor="let hit of searchResult.Hits.slice(0, 100)">
       <tr>
         <td> {{ hit.Name }} </td>
-        <td [innerHTML]="hit.Line[0] | markdown"></td>
         <!-- <td> {{ hit.Line }} </td> -->
+        <td [innerHTML]="hit.Line[0] | markdown"></td>
       </tr>
     </ng-container>
   </tbody>
 </table>
-
