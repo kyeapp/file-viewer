@@ -1,15 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"math/rand"
 	"net/mail"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/jhillyerd/enmime"
+	"github.com/schollz/progressbar/v3"
 	"gopkg.in/gomail.v2"
 )
 
@@ -18,51 +22,113 @@ import (
 // names.txt
 // words.txt
 
-const testfile = "test.eml"
+const NAME_FILE = "first-names.txt"
+const WORD_FILE = "words.txt"
+const NUM_EMAILS = 100
+const NUM_PEOPLES = 320
+const DATA_DIR = "data-eml"
+
+var bar *progressbar.ProgressBar
 
 func main() {
-	writeEml()
-	readEml()
-	os.Remove(testfile)
+	err := os.RemoveAll(DATA_DIR)
+	check(err)
+	err = os.Mkdir(DATA_DIR, 0777)
+	check(err)
+
+	names := loadNamesFromFile()
+	words := loadWordsFromFile()
+	bar = progressbar.Default(NUM_PEOPLES * NUM_PEOPLES * NUM_EMAILS)
+
+	for _, sender := range names {
+		for _, receiver := range names {
+			for k := 0; k < NUM_EMAILS; k++ {
+				subject := fmt.Sprintf("%s-%s-email%d", sender, receiver, k)
+				body := generate500RandomWords(words)
+				_ = writeEml(sender, receiver, subject, body)
+				bar.Add(1)
+				// filename := writeEml(sender, receiver, subject, body)
+				// readEml(filename)
+			}
+		}
+	}
 }
 
-func readEml() {
-	// Get the absolute path of the EML file
-	filePath, err := filepath.Abs(testfile)
-	if err != nil {
-		log.Fatal(err)
+func generate500RandomWords(words []string) string {
+	rand.Seed(time.Now().UnixNano())
+
+	var randomWords []string
+	for i := 0; i < 10; i++ {
+		randomIndex := rand.Intn(len(words))
+		randomWord := words[randomIndex]
+		randomWords = append(randomWords, randomWord)
 	}
+
+	return strings.Join(randomWords, " ")
+}
+
+func loadWordsFromFile() []string {
+	// Read the names file
+	data, err := ioutil.ReadFile(WORD_FILE)
+	check(err)
+
+	// Split the file content into names
+	words := strings.Split(strings.TrimSpace(string(data)), "\n")
+
+	fmt.Println("number of words loaded: ", len(words))
+	return words
+}
+
+func loadNamesFromFile() []string {
+	file, err := os.Open(NAME_FILE)
+	check(err)
+	defer file.Close()
+
+	var names []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		name := scanner.Text()
+		names = append(names, name)
+	}
+
+	err = scanner.Err()
+	check(err)
+
+	fmt.Println("number of names:", NUM_PEOPLES)
+	return names[:NUM_PEOPLES]
+}
+
+func readEml(filename string) {
+	// Get the absolute path of the EML file
+	filePath, err := filepath.Abs(filename)
+	check(err)
 
 	// Read the EML file
 	emlData, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 
 	// Create an io.Reader from the EML data
 	emlReader := bytes.NewReader(emlData)
 
 	// Parse the EML message
 	msg, err := mail.ReadMessage(emlReader)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 
 	// Extract the relevant information
 	from := msg.Header.Get("From")
 	to := msg.Header.Get("To")
 	subject := msg.Header.Get("Subject")
 	date, err := msg.Header.Date()
-	if err != nil {
-		fmt.Println("Error retrieving email date:", err)
-		return
-	}
+	check(err)
 
 	// Read the body of the message
-	body, err := ioutil.ReadAll(msg.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	reader := bytes.NewReader(emlData)
+	env, err := enmime.ReadEnvelope(reader)
+	check(err)
+
+	body := env.Text
+	body = strings.ReplaceAll(body, "=\r\n", "")
+	body = strings.ReplaceAll(body, "= ", "")
 
 	// Print the extracted information
 	fmt.Println("Date:", date.Format(time.RFC1123Z))
@@ -72,32 +138,34 @@ func readEml() {
 	fmt.Println("Body:", string(body))
 }
 
-func writeEml() {
+func writeEml(sender, receiver, subject, body string) (filename string) {
+	filename = filepath.Join(DATA_DIR, fmt.Sprintf("%s.eml", subject))
+
 	// Create a new message
 	msg := gomail.NewMessage()
-	msg.SetHeader("From", "sender@example.com")
-	msg.SetHeader("To", "recipient@example.com")
-	msg.SetHeader("Subject", "Test EML")
-	msg.SetBody("text/plain", "This is the body of the email.")
+	msg.SetHeader("From", fmt.Sprintf("%s@gmail.com", sender))
+	msg.SetHeader("To", fmt.Sprintf("%s@gmail.com", receiver))
+	msg.SetHeader("Subject", subject)
+	msg.SetBody("text/plain", body)
 
 	// Set a custom date for the email
 	date := time.Date(2022, time.January, 1, 12, 0, 0, 0, time.UTC)
 	msg.SetDateHeader("Date", date)
 
 	// Write the EML data to a buffer
-	buf := &bytes.Buffer{}
+	buf := new(bytes.Buffer)
 	_, err := msg.WriteTo(buf)
-	if err != nil {
-		fmt.Println("Error writing EML:", err)
-		return
-	}
+	check(err)
 
 	// Write the buffer data to a file
-	err = ioutil.WriteFile(testfile, buf.Bytes(), 0644)
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
-	}
+	err = ioutil.WriteFile(filename, buf.Bytes(), 0644)
+	check(err)
 
-	fmt.Println("EML file created successfully.")
+	return
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
