@@ -26,6 +26,7 @@ const NAME_FILE = "first-names.txt"
 const WORD_FILE = "words.txt"
 const NUM_EMAILS = 100
 const NUM_PEOPLES = 320
+const NUM_WORDS_PER_EMAIL = 500
 const DATA_DIR = "data-eml"
 
 var bar *progressbar.ProgressBar
@@ -38,13 +39,19 @@ func main() {
 
 	names := loadNamesFromFile()
 	words := loadWordsFromFile()
-	bar = progressbar.Default(NUM_PEOPLES * NUM_PEOPLES * NUM_EMAILS)
+	emailCount := NUM_PEOPLES * NUM_PEOPLES * NUM_EMAILS
+	fmt.Println("people count:", NUM_PEOPLES)
+	fmt.Println("word count:", len(words))
+	fmt.Println("email count from A to B:", NUM_EMAILS)
+	fmt.Println("total email count:", emailCount)
+
+	bar = progressbar.Default(int64(emailCount))
 
 	for _, sender := range names {
 		for _, receiver := range names {
 			for k := 0; k < NUM_EMAILS; k++ {
 				subject := fmt.Sprintf("%s-%s-email%d", sender, receiver, k)
-				body := generate500RandomWords(words)
+				body := generateRandomWords(words, NUM_WORDS_PER_EMAIL)
 				_ = writeEml(sender, receiver, subject, body)
 				bar.Add(1)
 				// filename := writeEml(sender, receiver, subject, body)
@@ -54,11 +61,11 @@ func main() {
 	}
 }
 
-func generate500RandomWords(words []string) string {
+func generateRandomWords(words []string, count int) string {
 	rand.Seed(time.Now().UnixNano())
 
 	var randomWords []string
-	for i := 0; i < 10; i++ {
+	for i := 0; i < count; i++ {
 		randomIndex := rand.Intn(len(words))
 		randomWord := words[randomIndex]
 		randomWords = append(randomWords, randomWord)
@@ -75,7 +82,6 @@ func loadWordsFromFile() []string {
 	// Split the file content into names
 	words := strings.Split(strings.TrimSpace(string(data)), "\n")
 
-	fmt.Println("number of words loaded: ", len(words))
 	return words
 }
 
@@ -94,7 +100,6 @@ func loadNamesFromFile() []string {
 	err = scanner.Err()
 	check(err)
 
-	fmt.Println("number of names:", NUM_PEOPLES)
 	return names[:NUM_PEOPLES]
 }
 
